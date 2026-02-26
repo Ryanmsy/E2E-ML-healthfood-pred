@@ -19,7 +19,7 @@ def data_loading():
     return df
 
 
-def data_preprocess(df : pd.DataFrame) -> str:
+def data_preprocess(df : pd.DataFrame):
     #  --- X and Y init --- 
     X = df.drop(columns= ['healthy_ind']).select_dtypes(exclude = ['object'])
     y = df['healthy_ind'] 
