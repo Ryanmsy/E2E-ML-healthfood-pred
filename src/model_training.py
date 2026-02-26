@@ -147,5 +147,6 @@ if __name__ == "__main__":
 
 # --- Run Random Forest ---
     print("========== RANDOM FOREST ==========")
+    print("testing git add")
     rf_model = random_forest(X_train, y_train)
     evaluate_model(X_train, X_test, y_train, y_test, X, rf_model)
