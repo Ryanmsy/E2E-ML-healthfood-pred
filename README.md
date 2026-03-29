@@ -1,6 +1,10 @@
 ## Overview
 End-to-end API food data pipeline based on OpenFoodFacts using Logistic Regression to predict if a food is healthy or not.
 
+## Topics: 
+Logistic Regression 
+API Pulling 
+ETL Pipeline
 
 Macro Avg = treats every class equally.
 
@@ -39,3 +43,9 @@ It is more fair be cause it penalize based on how much each weight the class is
 * Edge - Combination of cloud on premise
 
 * On device - personl devices laptop, smartphone (I guess this is what I am doing?)
+
+
+## Topics: 
+Logistic Regression 
+API Pulling 
+ETL Pipeline
