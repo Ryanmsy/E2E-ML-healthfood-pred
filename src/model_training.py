@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+import joblib
 
 
 def data_loading():
@@ -49,9 +50,8 @@ def impute(X_train, X_test ):
 
     X_train = imputer.fit_transform(X_train)
     X_test = imputer.transform(X_test)
-    print(f"imputer: {locals()}")
-    return X_train, X_test
-    #do we transform now? 
+    return X_train, X_test, imputer
+    #do we transform now?
 
 #encodings (none because no cateogorical data)
 
@@ -64,7 +64,7 @@ def scaling(X_train, X_test):
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
-    return X_train, X_test
+    return X_train, X_test, scaler
 
 
 def random_forest(X_train, y_train):
@@ -136,10 +136,10 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test, X,y = data_preprocess(df)
 
     #3 Impute 
-    X_train, X_test = impute(X_train, X_test)
+    X_train, X_test, imputer = impute(X_train, X_test)
 
     #4. scaling
-    X_train, X_test = scaling(X_train, X_test)
+    X_train, X_test, scaler = scaling(X_train, X_test)
 
     print("========== LOGISTIC REGRESSION ==========")
     log_model = model_int(X_train, y_train)
@@ -150,3 +150,13 @@ if __name__ == "__main__":
     print("testing git add")
     rf_model = random_forest(X_train, y_train)
     evaluate_model(X_train, X_test, y_train, y_test, X, rf_model)
+
+    # --- Save models and preprocessing artifacts ---
+    models_path = Path(__file__).resolve().parent.parent / 'models'
+    models_path.mkdir(exist_ok=True)
+
+    joblib.dump(imputer, models_path / 'imputer.pkl')
+    joblib.dump(scaler,  models_path / 'scaler.pkl')
+    joblib.dump(log_model, models_path / 'logistic_regression.pkl')
+    joblib.dump(rf_model, models_path / 'random_forest.pkl')
+    print(f"Models saved to {models_path}")
