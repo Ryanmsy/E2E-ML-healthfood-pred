@@ -11,3 +11,7 @@ wheels/
 
 # Ignore model files
 *.pkl
+
+#ignore mlflow, internal 
+mlflow.db
+mlruns/
