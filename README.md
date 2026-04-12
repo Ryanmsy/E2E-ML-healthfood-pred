@@ -2,50 +2,48 @@
 End-to-end API food data pipeline based on OpenFoodFacts using Logistic Regression to predict if a food is healthy or not.
 
 ## Topics: 
-Logistic Regression 
-API Pulling 
+API Ingestion
 ETL Pipeline
-
-Macro Avg = treats every class equally.
-
-Metric Class x + Metric Class x + Metric Class x... / Total Num Class
-
- (metric 0 + metric 1 ) / 2 
-
- It penalizes everyone evenly but it would penalize mnoiire on the minoritry class because it will perform worse as it did not have the time to train hence it performed worst. 
-
-
- Weight Avg = 
- (Class x * No of Class x / Total Class) + (Class x * No of class x / Total Class)
-
-
-(0.85 * (292/426)) + (0.70 * (134/426))
-
-It is more fair be cause it penalize based on how much each weight the class is 
-
-
-
-## how would we deploy it ? (Online / Batch) then Envinronments 
-
-### First lets dicuss the difference of the 2 mains 
-
-* Online = a model would use automatically at real time at every second. For example, self driving vehcile where every split second its a new image that the model would need to be applied and learn to make the next course of movement. 
-
-* Batch = Do it overnight, or a huge chunks of data is batched into the model. Main great thing is GPU contains many processing units whih can run uin parallel -- I presume this is similiar to the concept of containers (dockers) and kubernets to ocerhates the huge workflow into smaller chunks running in parallel 
-
-
-### Where would we we deploy it? (Environment)
-
-* on premise  - using physical servers and managing them 
-
-* Cloud - cloud providers like amazon, ibm 
-
-* Edge - Combination of cloud on premise
-
-* On device - personl devices laptop, smartphone (I guess this is what I am doing?)
-
-
-## Topics: 
 Logistic Regression 
-API Pulling 
-ETL Pipeline
+Random Forest
+Inference
+Model Monitoring
+
+##  Understanding the Evaluation Metrics
+
+
+### Macro Average
+*Treats every class equally.*
+
+* **Formula:** `(Metric Class 0 + Metric Class 1) / Total Number of Classes`
+* **Intuition:** It penalizes the model evenly across all predictions . Because the model usually performs worse on a minority class (since it didn't have as much data or time to train on it), the Macro Average will drop heavily, making it easy to spot if the minority class is failing.
+
+### Weighted Average
+*Factors in the size of each class.*
+
+* **Formula:** `(Metric Class 0 * (Count of Class 0 / Total Count)) + (Metric Class 1 * (Count of Class 1 / Total Count))`
+* **Example:** `(0.85 * (292/426)) + (0.70 * (134/426))`
+* **Intuition:** It is more "fair" for looking at overall performance because it scales the score based on how much weight each class actually holds in the dataset.
+
+
+## 🚀 Model Deployment Strategy
+
+When moving this project out of the development phase, there are two main architectural decisions to make: *how* the model serves predictions, and *where* it lives. 
+
+### 1. How are we serving the model? (Online vs. Batch)
+
+* **Online (Real-Time) Inference:** The model generates predictions instantly as new data arrives. 
+  * *Example:* A self-driving vehicle processing new image frames every split second to determine its next movement. Latency and speed are the top priorities here.
+  
+* **Batch (Offline) Inference:** Predictions are generated on massive chunks of data all at once, typically on a set schedule (e.g., an overnight data pipeline). 
+  * *The Advantage:* This allows us to maximize parallel processing. We can utilize GPUs to handle the heavy mathematical operations simultaneously, and use container orchestration tools (like Docker and Kubernetes) to break the massive workflow down into smaller, parallel computing jobs.
+
+### 2. Where are we deploying it? (The Environment)
+
+* **On-Premise:** Hosting on physical, in-house servers. We own the hardware and have total control over security, but we are responsible for all maintenance.
+
+* **Cloud:** Utilizing managed providers (like AWS, Google Cloud, or Azure). This allows us to scale computing resources up or down easily based on the model's demand.
+
+* **Edge:** Pushing the computation out to the "edge" of the network, closer to where the data is actually generated (like an IoT sensor or a smart camera). This reduces lag since the data doesn't have to travel all the way to a central cloud server.
+
+* **On-Device (Local):** Running the model directly on an end-user's personal hardware, such as a laptop or smartphone. (This is exactly what we are doing when running the model locally during the development phase!)
