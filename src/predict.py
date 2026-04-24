@@ -1,91 +1,79 @@
-import pandas as pd
-import numpy as np
-import joblib
+import joblib 
 from pathlib import Path
+import pandas as pd
+from typing import TypedDict, List
+
+#metadata for input
+class Nutritiondata(TypedDict):
+    calories: List[int]
+    fat: List[float]
+    saturated_fat: List[float]
+    carbohydrates: List[float]
+    sugars: List[float]
+    fiber: List[float]
+    proteins: List[float]
+    salt: List[float]
 
 
-FEATURE_COLUMNS = [
-    'calories',
-    'fat',
-    'saturated_fat',
-    'carbohydrates',
-    'sugars',
-    'fiber',
-    'proteins',
-    'salt',
-]
-
-def load_artifacts(model_name: str = 'random_forest'):
-    """
-    Load preprocessing artifacts and a trained model from models/.
-
-    Args:
-        model_name: 'random_forest' or 'logistic_regression'
-
-    Returns:
-        imputer, scaler, model
-    """
-    models_path = Path(__file__).resolve().parent.parent / 'models'
-
-    imputer = joblib.load(models_path / 'imputer.pkl')
-    scaler  = joblib.load(models_path / 'scaler.pkl')
-    model   = joblib.load(models_path / f'{model_name}.pkl')
-
-    return imputer, scaler, model
+# load models 
+def load_models(model_name: str = 'gb_pipeline'):
+    try:
+        models_path = Path(__file__).resolve().parent.parent / 'models' #food_api_project_uv\model
+        full_file_path = models_path / f'{model_name}.pkl'
+        model = joblib.load(full_file_path)
+        return model
+    except FileNotFoundError as e:
+        
+        print(f'{full_file_path} does not exist') 
+        raise 
+        
 
 
-def predict(input_data: dict, model_name: str = 'random_forest') -> dict:
-    """
-    Predict whether a food product is healthy based on its nutrient values.
+# structure mock data 
+def mock_datastructure(x: Nutritiondata) -> pd.DataFrame:  
+    test_row = pd.DataFrame(x)
+    return test_row
 
-    Args:
-        input_data: dict with keys matching FEATURE_COLUMNS.
-                    Missing nutrients default to NaN and are imputed.
-        model_name: which trained model to use ('random_forest' or 'logistic_regression')
 
-    Returns:
-        dict with:
-            'prediction'  - 1 (healthy) or 0 (not healthy)
-            'probability' - confidence score for the predicted class
-            'label'       - human-readable label
-    """
-    imputer, scaler, model = load_artifacts(model_name)
+# Execute the prediction 
+def predict_model (test_row: pd.DataFrame,model: object):
+    prediction = model.predict(test_row)
+    prediction_prod = model.predict_proba(test_row)[:,1]
 
-    # Build a single-row DataFrame, filling any missing columns with NaN
-    row = {col: input_data.get(col, np.nan) for col in FEATURE_COLUMNS}
-    X = pd.DataFrame([row], columns=FEATURE_COLUMNS)
+    # #simple dict
+    output_converter = {0: "Not Healthy", 1: "Healthy"}
 
-    # Apply the same preprocessing used during training (transform only, not fit)
-    X_imputed = imputer.transform(X)
-    X_scaled  = scaler.transform(X_imputed)
+    #get the output from prediction
+    pred_output = prediction[0]
 
-    prediction = int(model.predict(X_scaled)[0])
+    #map pred_output to dict 
+    output = output_converter.get(pred_output,'unknown')
 
-    if hasattr(model, 'predict_proba'):
-        probability = float(model.predict_proba(X_scaled)[0][prediction])
-    else:
-        probability = None
+    final_output = {f'the prediciton is {output} with {prediction_prod} confidence'}
 
-    return {
-        'prediction':  prediction,
-        'probability': probability,
-        'label':       'healthy' if prediction == 1 else 'not healthy',
+
+    return final_output
+  
+
+        
+
+if __name__ == '__main__':    # check if the code being run is on the same file 
+
+    mock_dict: Nutritiondata = {
+            'calories': [150],                    
+            'fat': [6.0],                         
+            'saturated_fat': [0.5],               
+            'carbohydrates': [20.0],              
+            'sugars': [8.0],                      
+            'fiber': [3.0],                       
+            'proteins': [4.0],                    
+            'salt': [0.1]                         
     }
 
+    model = load_models()
 
-if __name__ == '__main__':
-    # Example: a product with known nutrient values
-    sample_product = {
-        'calories':      52.0,
-        'fat':           0.2,
-        'saturated_fat': 0.0,
-        'carbohydrates': 14.0,
-        'sugars':        10.0,
-        'fiber':         2.4,
-        'proteins':      0.3,
-        'salt':          0.0,
-    }
+    test_data =  mock_datastructure(mock_dict)
 
-    result = predict(sample_product, model_name='random_forest')
-    print(f"Prediction : {result['label']} ({result['prediction']})")
-    print(f"Confidence : {result['probability']:.2%}" if result['probability'] else "No probability available")
+    result = predict_model(test_data,model)
+
+    print(result)
